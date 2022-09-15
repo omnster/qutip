@@ -23,7 +23,7 @@ where :math:`\Psi` is the wave function, :math:`\hat H` the Hamiltonian, and :ma
 
 where :math:`\left|\psi\right>` is the state vector and :math:`H` is the matrix representation of the Hamiltonian. This matrix equation can, in principle, be solved by diagonalizing the Hamiltonian matrix :math:`H`. In practice, however, it is difficult to perform this diagonalization unless the size of the Hilbert space (dimension of the matrix :math:`H`) is small. Analytically, it is a formidable task to calculate the dynamics for systems with more than two states. If, in addition, we consider dissipation due to the inevitable interaction with a surrounding environment, the computational complexity grows even larger, and we have to resort to numerical calculations in all realistic situations. This illustrates the importance of numerical calculations in describing the dynamics of open quantum systems, and the need for efficient and accessible tools for this task.
 
-The Schrödinger equation, which governs the time-evolution of closed quantum systems, is defined by its Hamiltonian and state vector. In the previous section, :ref:`tensor`, we showed how Hamiltonians and state vectors are constructed in QuTiP. Given a Hamiltonian, we can calculate the unitary (non-dissipative) time-evolution of an arbitrary state vector :math:`\left|\psi_0\right>` (``psi0``) using the QuTiP function :func:`qutip.sesolve`. It evolves the state vector and evaluates the expectation values for a set of operators ``expt_ops`` at the points in time in the list ``times``, using an ordinary differential equation solver.
+The Schrödinger equation, which governs the time-evolution of closed quantum systems, is defined by its Hamiltonian and state vector. In the previous section, :ref:`tensor`, we showed how Hamiltonians and state vectors are constructed in QuTiP. Given a Hamiltonian, we can calculate the unitary (non-dissipative) time-evolution of an arbitrary state vector :math:`\left|\psi_0\right>` (``psi0``) using the QuTiP function :func:`qutip.sesolve`. It evolves the state vector and evaluates the expectation values for a set of operators ``e_ops`` at the points in time in the list ``times``, using an ordinary differential equation solver.
 
 For example, the time evolution of a quantum spin-1/2 system with tunneling rate 0.1 that initially is in the up state is calculated, and the  expectation values of the :math:`\sigma_z` operator evaluated, with the following code
 
@@ -126,9 +126,9 @@ where the :math:`C_n = \sqrt{\gamma_n} A_n` are collapse operators, and :math:`A
 
 - **Born approximation:** Requires: (1) that the state of the environment does not significantly change as a result of the interaction with the system;  (2) The system and the environment remain separable throughout the evolution. These assumptions are justified if the interaction is weak, and if the environment is much larger than the system. In summary, :math:`\rho_{\rm tot}(t) \approx \rho(t)\otimes\rho_{\rm env}`.
 
-- **Markov approximation** The time-scale of decay for the environment :math:`\tau_{\rm env}` is much shorter than the smallest time-scale of the system dynamics :math:`\tau_{\rm sys} \gg \tau_{\rm env}`. This approximation is often deemed a "short-memory environment" as it requires that environmental correlation functions decay on a time-scale fast compared to those of the system.
+- **Markov approximation:** The time-scale of decay for the environment :math:`\tau_{\rm env}` is much shorter than the smallest time-scale of the system dynamics :math:`\tau_{\rm sys} \gg \tau_{\rm env}`. This approximation is often deemed a "short-memory environment" as it requires that environmental correlation functions decay on a time-scale fast compared to those of the system.
 
-- **Secular approximation** Stipulates that elements in the master equation corresponding to transition frequencies satisfy :math:`|\omega_{ab}-\omega_{cd}| \ll 1/\tau_{\rm sys}`, i.e., all fast rotating terms in the interaction picture can be neglected. It also ignores terms that lead to a small renormalization of the system energy levels. This approximation is not strictly necessary for all master-equation formalisms (e.g., the Block-Redfield master equation), but it is required for arriving at the Lindblad form :eq:`lindblad_master_equation` which is used in :func:`qutip.mesolve`.
+- **Secular approximation:** Stipulates that elements in the master equation corresponding to transition frequencies satisfy :math:`|\omega_{ab}-\omega_{cd}| \ll 1/\tau_{\rm sys}`, i.e., all fast rotating terms in the interaction picture can be neglected. It also ignores terms that lead to a small renormalization of the system energy levels. This approximation is not strictly necessary for all master-equation formalisms (e.g., the Bloch-Redfield master equation), but it is required for arriving at the Lindblad form :eq:`lindblad_master_equation` which is used in :func:`qutip.mesolve`.
 
 
 For systems with environments satisfying the conditions outlined above, the Lindblad master equation :eq:`lindblad_master_equation` governs the time-evolution of the system density matrix, giving an ensemble average of the system dynamics. In order to ensure that these approximations are not violated, it is important that the decay rates :math:`\gamma_n` be smaller than the minimum energy splitting in the system Hamiltonian. Situations that demand special attention therefore include, for example, systems strongly coupled to their environment, and systems with degenerate or nearly degenerate energy levels.
@@ -136,7 +136,7 @@ For systems with environments satisfying the conditions outlined above, the Lind
 
 For non-unitary evolution of a quantum systems, i.e., evolution that includes
 incoherent processes such as relaxation and dephasing, it is common to use
-master equations. In QuTiP, the function :func:`qutip.mesolve` is used for both:
+master equations. In QuTiP, the function :func:`qutip.mesolve` can be used for both:
 the evolution according to the Schrödinger equation and to the master equation,
 even though these two equations of motion are very different. The :func:`qutip.mesolve`
 function automatically determines if it is sufficient to use the Schrödinger
@@ -161,7 +161,7 @@ the master equation instead of the unitary Schrödinger equation.
 
 Using the example with the spin dynamics from the previous section, we can
 easily add a relaxation process (describing the dissipation of energy from the
-spin to its environment), by adding ``np.sqrt(0.05) * sigmax()`` in the fourth
+spin to its environment), by adding ``[ np.sqrt(0.05) * sigmax() ]`` as the fourth
 parameter to the :func:`qutip.mesolve` function and moving the expectation
 operators ``[sigmaz(), sigmay()]`` to the fifth argument.
 
@@ -183,7 +183,7 @@ operators ``[sigmaz(), sigmay()]`` to the fifth argument.
 Here, 0.05 is the rate and the operator :math:`\sigma_x` (:func:`qutip.operators.sigmax`) describes the dissipation
 process.
 
-Now a slightly more complex example: Consider a two-level atom coupled to a leaky single-mode cavity through a dipole-type interaction, which supports a coherent exchange of quanta between the two systems. If the atom initially is in its groundstate and the cavity in a 5-photon Fock state, the dynamics is calculated with the lines following code
+Now a slightly more complex example: Consider a two-level atom coupled to a leaky single-mode cavity through a dipole-type interaction, which supports a coherent exchange of quanta between the two systems. If the atom initially is in its ground state and the cavity in a 5-photon Fock state, the dynamics is calculated with the lines following code
 
 .. plot::
     :context: close-figs
